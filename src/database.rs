@@ -7,19 +7,12 @@ use crate::Connection;
 use crate::{check, Config};
 use std::error::Error;
 use std::ffi::{c_void, CString};
-use std::ptr::{addr_of, addr_of_mut, null_mut};
-
-/// Equivalent of [`DatabaseData`](https://github.com/duckdb/duckdb/blob/50951241de3d9c06fac5719dcb907eb21163dcab/src/include/duckdb/main/capi_internal.hpp#L27), wraps `duckdb::DuckDB`
-#[repr(C)]
-#[derive(Debug)]
-struct Wrapper {
-    instance: *const c_void,
-}
+use std::ptr::{addr_of_mut, null_mut};
 
 #[derive(Debug)]
 enum DatabaseOwnership {
     Owned(duckdb_database),
-    Borrowed(Wrapper),
+    Borrowed(duckdb_database),
 }
 
 #[derive(Debug)]
@@ -54,7 +47,7 @@ impl Database {
 
     /// Construct a [`Database`] instance from a pointer passed to an extensions `init` function
     pub fn from_cpp_duckdb(ptr: *mut c_void) -> Self {
-        Self(Borrowed(Wrapper { instance: ptr }))
+        Self(Borrowed(ptr))
     }
 
     pub fn connect(&self) -> Result<Connection, Box<dyn Error>> {
@@ -71,7 +64,7 @@ impl Database {
 
     fn get_ptr(&self) -> duckdb_database {
         match &self.0 {
-            Borrowed(wrapper) => addr_of!(wrapper) as duckdb_database,
+            Borrowed(ptr) => *ptr,
             Owned(ptr) => *ptr,
         }
     }
