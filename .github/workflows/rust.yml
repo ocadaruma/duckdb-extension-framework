@@ -41,16 +41,19 @@ jobs:
     - name: Run tests
       run: LD_PRELOAD=$(whereis libasan.so.6 | cut -d ' ' -f 2) cargo test --verbose --all-features
 
-#    - name: cleanup
-#      run: |
-#        ls
-#        rm -rf duckdb/*
+    - name: cleanup
+      run: |
+        ls
+        rm -rf duckdb/*
 
-#    - working-directory: duckdb
-#      run: git checkout src/include
-#
-#    - uses: katyo/publish-crates@v2
-#      if: github.ref == 'refs/heads/main'
-#      with:
-#          registry-token: ${{ secrets.CARGO_TOKEN }}
-#          ignore-unpublished-changes: true
+    - working-directory: duckdb
+      run: git checkout src/include
+
+    - name: Package crate
+      run: cargo package --verbose
+
+    - name: Archive crate
+      uses: actions/upload-artifact@v2
+      with:
+          name: duckdb-extension-framework-0.7.0.crate
+          path: ${{ github.workspace }}/target/package/duckdb-extension-framework-0.7.0.crate
