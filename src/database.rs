@@ -47,7 +47,7 @@ impl Database {
 
     /// Construct a [`Database`] instance from a pointer passed to an extensions `init` function
     pub fn from_cpp_duckdb(ptr: *mut c_void) -> Self {
-        Self(Borrowed(ptr))
+        Self(Borrowed(ptr as duckdb_database))
     }
 
     pub fn connect(&self) -> Result<Connection, Box<dyn Error>> {

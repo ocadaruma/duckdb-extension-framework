@@ -66,15 +66,15 @@ fn test_database_creation() -> Result<(), Box<dyn Error>> {
 
     let table_function = TableFunction::default();
     table_function
-        .add_parameter(&LogicalType::new(LogicalTypeId::Json))
-        .set_name("read_json")
+        .add_parameter(&LogicalType::new(LogicalTypeId::Varchar))
+        .set_name("foo_func")
         .supports_pushdown(false)
         .set_function(Some(func))
         .set_init(Some(init))
         .set_bind(Some(bind));
     conn.register_table_function(table_function)?;
 
-    let query = CString::new("select * from read_json('hello.json')")?;
+    let query = CString::new("select * from foo_func('hello.json')")?;
 
     unsafe {
         let mut result: duckdb_result = mem::zeroed();

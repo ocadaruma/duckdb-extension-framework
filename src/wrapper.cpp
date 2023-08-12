@@ -20,13 +20,13 @@ extern "C" {
 duckdb_logical_type duckdb_create_struct_type(idx_t n_pairs, const char **names, const duckdb_logical_type *types) {
     auto *stype = new duckdb::LogicalType;
     *stype = duckdb::LogicalType::STRUCT(getVector(n_pairs, names, types));
-    return stype;
+    return reinterpret_cast<duckdb_logical_type>(stype);
 }
 
 duckdb_logical_type duckdb_create_union(idx_t nmembers, const char **names, const duckdb_logical_type *types) {
     auto *utype = new duckdb::LogicalType;
     *utype = duckdb::LogicalType::UNION(getVector(nmembers, names, types));
-    return utype;
+    return reinterpret_cast<duckdb_logical_type>(utype);
 }
 
 }

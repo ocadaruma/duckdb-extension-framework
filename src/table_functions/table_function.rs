@@ -1,11 +1,4 @@
-use crate::duckly::{
-    duckdb_create_table_function, duckdb_delete_callback_t, duckdb_destroy_table_function,
-    duckdb_table_function, duckdb_table_function_add_parameter, duckdb_table_function_init_t,
-    duckdb_table_function_set_bind, duckdb_table_function_set_extra_info,
-    duckdb_table_function_set_function, duckdb_table_function_set_init,
-    duckdb_table_function_set_local_init, duckdb_table_function_set_name,
-    duckdb_table_function_supports_projection_pushdown,
-};
+use crate::duckly::{duckdb_create_table_function, duckdb_data_chunk, duckdb_delete_callback_t, duckdb_destroy_table_function, duckdb_function_info, duckdb_table_function, duckdb_table_function_add_parameter, duckdb_table_function_init_t, duckdb_table_function_set_bind, duckdb_table_function_set_extra_info, duckdb_table_function_set_function, duckdb_table_function_set_init, duckdb_table_function_set_local_init, duckdb_table_function_set_name, duckdb_table_function_supports_projection_pushdown};
 use crate::logical_type::LogicalType;
 #[allow(unused)]
 use crate::table_functions::InitInfo;
@@ -58,7 +51,7 @@ impl TableFunction {
     ///  * `function`: The function
     pub fn set_function(
         &self,
-        func: Option<unsafe extern "C" fn(*mut c_void, *mut c_void)>,
+        func: Option<unsafe extern "C" fn(duckdb_function_info, duckdb_data_chunk)>,
     ) -> &Self {
         unsafe {
             duckdb_table_function_set_function(self.ptr, func);
