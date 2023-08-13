@@ -5,7 +5,6 @@ use crate::duckly::{
     duckdb_get_type_id, duckdb_logical_type, idx_t,
 };
 use num_traits::FromPrimitive;
-use std::collections::HashMap;
 use std::ffi::{c_char, CString};
 use std::ops::Deref;
 
@@ -51,19 +50,19 @@ impl LogicalType {
     ///
     /// # Argument
     /// `shape` should be the fields and types in the `struct`
-    pub fn new_struct_type(shape: HashMap<&str, LogicalType>) -> Self {
+    pub fn new_struct_type(shape: &[(&str, LogicalType)]) -> Self {
         Self::make_meta_type(shape, duckdb_create_struct_type)
     }
     /// Make `LogicalType` for `union`
     ///
     /// # Argument
     /// `shape` should be the variants in the `union`
-    pub fn new_union_type(shape: HashMap<&str, LogicalType>) -> Self {
+    pub fn new_union_type(shape: &[(&str, LogicalType)]) -> Self {
         Self::make_meta_type(shape, duckdb_create_union)
     }
 
     fn make_meta_type(
-        shape: HashMap<&str, LogicalType>,
+        shape: &[(&str, LogicalType)],
         x: unsafe extern "C" fn(
             nmembers: idx_t,
             names: *mut *const c_char,
@@ -71,10 +70,13 @@ impl LogicalType {
         ) -> duckdb_logical_type,
     ) -> LogicalType {
         let keys: Vec<CString> = shape
-            .keys()
-            .map(|it| CString::new(it.deref()).unwrap())
+            .iter()
+            .map(|it| CString::new(it.0).unwrap())
             .collect();
-        let values: Vec<duckdb_logical_type> = shape.values().map(|it| it.typ).collect();
+        let values: Vec<duckdb_logical_type> = shape
+            .iter()
+            .map(|it| it.1.typ)
+            .collect();
         let name_ptrs = keys
             .iter()
             .map(|it| it.as_ptr())
@@ -138,16 +140,16 @@ mod test {
 
         assert_eq!(map.type_id(), LogicalTypeId::Map);
 
-        let union_ = LogicalType::new_union_type(HashMap::from([
+        let union_ = LogicalType::new_union_type(&[
             ("number", LogicalType::new(LogicalTypeId::Bigint)),
             ("string", LogicalType::new(LogicalTypeId::Varchar)),
-        ]));
+        ]);
         assert_eq!(union_.type_id(), LogicalTypeId::Union);
 
-        let struct_ = LogicalType::new_struct_type(HashMap::from([
+        let struct_ = LogicalType::new_struct_type(&[
             ("number", LogicalType::new(LogicalTypeId::Bigint)),
             ("string", LogicalType::new(LogicalTypeId::Varchar)),
-        ]));
+        ]);
         assert_eq!(struct_.type_id(), LogicalTypeId::Struct);
     }
 }
