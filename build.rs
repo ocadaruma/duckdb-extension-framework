@@ -33,7 +33,7 @@ fn main() {
         // .generate_comments(true)
         // .derive_default(true)
         // Tell bindgen we are processing c++
-        .clang_arg("-xc++")
+        // .clang_arg("-xc++")
         // .clang_arg("-std=c++11")
         .clang_arg("-I")
         .clang_arg(duckdb_include.to_string_lossy())
